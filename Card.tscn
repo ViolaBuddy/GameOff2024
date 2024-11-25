@@ -1,9 +1,24 @@
-[gd_scene load_steps=2 format=3 uid="uid://5l3v24i0tvab"]
+[gd_scene load_steps=3 format=3 uid="uid://5l3v24i0tvab"]
 
 [ext_resource type="Texture2D" uid="uid://dl2mi4jyhe0f2" path="res://assets/cardtemplate.png" id="1_smees"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_bf5sh"]
+font_size = 32
+font_color = Color(0, 0, 0, 1)
 
 [node name="Node2D" type="Node2D"]
 texture_filter = 1
 
 [node name="Cardtemplate" type="Sprite2D" parent="."]
 texture = ExtResource("1_smees")
+
+[node name="TitleText" type="Label" parent="."]
+offset_left = -101.0
+offset_top = 48.0
+offset_right = 100.0
+offset_bottom = 151.0
+label_settings = SubResource("LabelSettings_bf5sh")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+text_overrun_behavior = 3

@@ -8,3 +8,7 @@ script = ExtResource("1_pcc6o")
 [node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="Board" type="Node2D" parent="."]
+position = Vector2(0, -100)
+
+[node name="Hand" type="Node2D" parent="."]
+position = Vector2(0, 440)
