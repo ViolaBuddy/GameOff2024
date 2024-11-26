@@ -31,6 +31,7 @@ const BOARD_OFFSET_Y = -((CARD_HEIGHT*BOARD_SCALE+SPACE_BETWEEN_CARDS)*BOARD_HEI
 
 @onready var instancedCard = preload("res://Card.tscn")
 @onready var Hand = $Hand
+@onready var Preview = $Preview
 
 func _ready() -> void:
 	# create board
@@ -44,6 +45,7 @@ func _ready() -> void:
 				(CARD_WIDTH*BOARD_SCALE+SPACE_BETWEEN_CARDS)*c + BOARD_OFFSET_X,
 				(CARD_HEIGHT*BOARD_SCALE+SPACE_BETWEEN_CARDS)*r + BOARD_OFFSET_Y)
 			myCard.scale = Vector2(BOARD_SCALE, BOARD_SCALE)
+			myCard.flipFaceDown()
 	
 	# set up deck
 	deck.shuffle()
@@ -51,9 +53,32 @@ func _ready() -> void:
 		draw_card()
 	update_hand_visualization()
 	
-# Called every frame. 'delta' is the elapsed time since the previous frame.
+	# set up preview
+	var previewClickArea = Preview.get_node("ClickArea")
+	Preview.remove_child(previewClickArea)
+	previewClickArea.queue_free()
+	Preview.flipFaceDown()
+	
 func _process(delta: float) -> void:
-	pass
+	if Globals.clickedCard:
+		Globals.clickedCard.flip()
+		Globals.clickedCard = null
+		
+	if Globals.unhoveredCard:
+		Preview.flipFaceDown()
+		Preview.setText("")
+		Globals.unhoveredCard = null
+		
+	if Globals.hoveredCard:
+		if Globals.hoveredCard.faceUp:
+			Preview.flipFaceUp()
+			Preview.setText(Globals.hoveredCard.nameText)
+			Globals.hoveredCard = null
+		else:
+			Preview.flipFaceDown()
+			Preview.setText("")
+			Globals.unhoveredCard = null
+			
 	
 func draw_card() -> void:
 	var drawn_card = deck.pop_back()
@@ -75,4 +100,4 @@ func update_hand_visualization() -> void:
 			0)
 		myCard.scale = Vector2(BOARD_SCALE, BOARD_SCALE)
 		
-		myCard.get_node("TitleText").text = ALL_CARDS[player_hand[i]]["Name"]
+		myCard.setText(ALL_CARDS[player_hand[i]]["Name"])
