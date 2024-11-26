@@ -1,21 +1,10 @@
 extends Node2D
 
-enum CardType { Agent, Gadget, Structure, Espionage }
-const ALL_CARDS = [
-	{"Name": "Orange Cat", "Type": CardType.Agent},
-	{"Name": "Smith", "Type": CardType.Agent},
-	{"Name": "The Bomb", "Type": CardType.Gadget},
-	{"Name": "Candle", "Type": CardType.Gadget},
-	{"Name": "Suspicious Amount of Candles", "Type": CardType.Gadget},
-	{"Name": "HQ", "Type": CardType.Structure},
-	{"Name": "Airport", "Type": CardType.Structure},
-	{"Name": "Convenient Accident", "Type": CardType.Espionage},
-	{"Name": "Windfall", "Type": CardType.Espionage},
-]
+var Card = load("res://src/Card.gd")
 
 var full_deck = []
-var player_hand = []
-var deck = range(len(ALL_CARDS)) # array of indices into ALL_CARDS
+var player_hand: Array[Card] = []
+var deck = range(len(Card.ALL_CARDS)) # array of indices into ALL_CARDS
 var board_state = [] #2d array: board_state[row][column]
 
 const HAND_SIZE = 3
@@ -35,10 +24,23 @@ const BOARD_OFFSET_Y = -((CARD_HEIGHT_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*BOA
 @onready var Preview = $Preview
 
 func _ready() -> void:
+	print("Ready")
 	# set up deck
 	deck.shuffle()
 	for i in range(HAND_SIZE):
 		draw_from_deck()
+		
+	for i in range(HAND_SIZE):
+		var card = instancedCard.instantiate()
+		
+		var card_offset_x = -((CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*len(player_hand)) / 2  + CARD_WIDTH_PX*BOARD_SCALE/2
+		
+		player_hand.push_back(card)
+		$Hand.add_child(card)
+		card.position = Vector2(
+			(CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*i + card_offset_x,
+		0)
+		card.scale = Vector2(BOARD_SCALE, BOARD_SCALE)
 	
 	# set up preview
 	var previewClickArea = Preview.get_node("ClickArea")
@@ -79,7 +81,7 @@ func _process(delta: float) -> void:
 			Preview.setText("")
 			Globals.unhoveredCard = null
 			
-	### Any display updates go hear
+	### Any display updates go here
 	draw_board()
 	draw_hand()
 			
@@ -98,12 +100,8 @@ func draw_hand() -> void:
 	for i in range(len(player_hand)):
 		var card_offset_x = -((CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*len(player_hand)) / 2  + CARD_WIDTH_PX*BOARD_SCALE/2
 		
-		var myCard = instancedCard.instantiate()
-		Hand.add_child(myCard)
-		myCard.position = Vector2(
+		var card = player_hand[i]
+		card.position = Vector2(
 			(CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*i + card_offset_x,
-			0)
-		myCard.scale = Vector2(BOARD_SCALE, BOARD_SCALE)
-		
-		myCard.setText(ALL_CARDS[player_hand[i]]["Name"])
+		0)
 	
