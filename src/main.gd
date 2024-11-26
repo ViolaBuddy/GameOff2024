@@ -56,23 +56,24 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	### Any game state updates go here
 	if Globals.clickedCard:
-		Globals.clickedCard.toggleSelect()
+		if Globals.selectedCard != null:
+			if Globals.selectedCard.cardIdx != 0 && Globals.clickedCard.cardIdx == 0:
+				Globals.clickedCard.initFromIndex(Globals.selectedCard.cardIdx)
 		Globals.selectedCard = Globals.clickedCard
 		Globals.clickedCard = null
 		
 	if Globals.unhoveredCard:
 		Preview.flipFaceDown()
-		Preview.setText("")
 		Globals.unhoveredCard = null
 		
 	if Globals.hoveredCard:
 		if Globals.hoveredCard.faceUp:
+			Preview.initFromIndex(Globals.hoveredCard.cardIdx)
 			Preview.flipFaceUp()
-			Preview.setText(Globals.hoveredCard.nameText)
 			Globals.hoveredCard = null
 		else:
+			Preview.initFromIndex(Globals.hoveredCard.cardIdx)
 			Preview.flipFaceDown()
-			Preview.setText("")
 			Globals.unhoveredCard = null
 			
 	### Any display updates go here
@@ -82,7 +83,7 @@ func _process(delta: float) -> void:
 func populate_deck() -> void:
 	for i in range(DECK_SIZE):
 		# Select a random card entry in the list
-		var card_idx = rng.randi_range(0, len(Card.ALL_CARDS) - 1)
+		var card_idx = rng.randi_range(1, len(Card.ALL_CARDS) - 1)
 		var card = instancedCard.instantiate()
 		card.initFromIndex(card_idx)
 		
@@ -101,7 +102,7 @@ func draw_from_deck() -> void:
 		player_hand.push_back(drawn_card)
 		$Hand.add_child(drawn_card)
 		
-		print("Drew the card ", drawn_card.nameText, " and added it to the hand")
+		print("Drew the card ", drawn_card.title, " and added it to the hand")
 	else:
 		print("No cards in deck, can't draw into the hand!")
 
