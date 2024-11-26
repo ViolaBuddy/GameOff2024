@@ -15,6 +15,7 @@ static var ALL_CARDS = [
 
 var faceUp := true
 var nameText := ""
+var type : CardType
 var isSelected := false
 
 # Index into the ALL_CARDS array to determine the properties of this card
@@ -22,6 +23,10 @@ var cardIdx := 0
 	
 func _ready() -> void:
 	flipFaceUp()
+	
+func initFromIndex(card_idx: int):
+	setText(ALL_CARDS[card_idx]["Name"])
+	type = ALL_CARDS[card_idx]["Type"]
 
 func flip() -> void:
 	if faceUp:
@@ -40,13 +45,7 @@ func flipFaceDown() -> void:
 	$CardBackSprite.z_index = 1
 	
 func toggleSelect() -> bool:
-	isSelected = !isSelected
-	
-	if isSelected: 
-		$CardSprite.scale *= 1.1
-	else:
-		$CardSprite.scale *= (1.0 / 1.1)
-		
+	isSelected = !isSelected	
 	return isSelected
 
 func setText(newText:String) -> void:

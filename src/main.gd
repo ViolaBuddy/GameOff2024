@@ -2,12 +2,14 @@ extends Node2D
 
 var Card = load("res://src/Card.gd")
 
-var full_deck = []
+# Every card is in one of the deck, hand, board, or discard
+var deck: Array[Card] = []
 var player_hand: Array[Card] = []
-var deck = range(len(Card.ALL_CARDS)) # array of indices into ALL_CARDS
 var board_state = [] #2d array: board_state[row][column]
+var discard: Array[Card] = []
 
-const HAND_SIZE = 3
+const HAND_SIZE = 7
+const DECK_SIZE = 64
 
 const BOARD_WIDTH := 5
 const BOARD_HEIGHT := 5
@@ -19,28 +21,19 @@ const SPACE_BETWEEN_CARDS_PX := 10
 const BOARD_OFFSET_X = -((CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*BOARD_WIDTH) / 2  + CARD_WIDTH_PX*BOARD_SCALE/2
 const BOARD_OFFSET_Y = -((CARD_HEIGHT_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*BOARD_HEIGHT) / 2 + CARD_HEIGHT_PX*BOARD_SCALE/2
 
+var rng = RandomNumberGenerator.new()
+
 @onready var instancedCard = preload("res://Card.tscn")
 @onready var Hand = $Hand
 @onready var Preview = $Preview
 
 func _ready() -> void:
-	print("Ready")
-	# set up deck
-	deck.shuffle()
+	populate_deck()
+	
 	for i in range(HAND_SIZE):
 		draw_from_deck()
 		
-	for i in range(HAND_SIZE):
-		var card = instancedCard.instantiate()
-		
-		var card_offset_x = -((CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*len(player_hand)) / 2  + CARD_WIDTH_PX*BOARD_SCALE/2
-		
-		player_hand.push_back(card)
-		$Hand.add_child(card)
-		card.position = Vector2(
-			(CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*i + card_offset_x,
-		0)
-		card.scale = Vector2(BOARD_SCALE, BOARD_SCALE)
+	print("Initialized hand with ", len(player_hand), " cards")
 	
 	# set up preview
 	var previewClickArea = Preview.get_node("ClickArea")
@@ -64,6 +57,7 @@ func _process(delta: float) -> void:
 	### Any game state updates go here
 	if Globals.clickedCard:
 		Globals.clickedCard.toggleSelect()
+		Globals.selectedCard = Globals.clickedCard
 		Globals.clickedCard = null
 		
 	if Globals.unhoveredCard:
@@ -85,9 +79,31 @@ func _process(delta: float) -> void:
 	draw_board()
 	draw_hand()
 			
+func populate_deck() -> void:
+	for i in range(DECK_SIZE):
+		# Select a random card entry in the list
+		var card_idx = rng.randi_range(0, len(Card.ALL_CARDS) - 1)
+		var card = instancedCard.instantiate()
+		card.initFromIndex(card_idx)
+		
+		deck.push_back(card)
+		
+	# set up deck
+	deck.shuffle()
+	
+	print("Created deck with ", len(deck), " cards")
+	
 func draw_from_deck() -> void:
-	var drawn_card = deck.pop_back()
-	player_hand.push_back(drawn_card)
+	if deck.size() > 0:
+		var drawn_card = deck.pop_back()
+		
+		# TODO: We should be able to consolidate this so we don't have two different hands to update?
+		player_hand.push_back(drawn_card)
+		$Hand.add_child(drawn_card)
+		
+		print("Drew the card ", drawn_card.nameText, " and added it to the hand")
+	else:
+		print("No cards in deck, can't draw into the hand!")
 
 func draw_board() -> void:
 	# create board
@@ -104,4 +120,11 @@ func draw_hand() -> void:
 		card.position = Vector2(
 			(CARD_WIDTH_PX*BOARD_SCALE+SPACE_BETWEEN_CARDS_PX)*i + card_offset_x,
 		0)
+		
+		card.scale = Vector2(1.0, 1.0)
+		if card == Globals.selectedCard:
+			card.scale *= 1.1 * BOARD_SCALE
+		else:
+			card.scale *= 1.0 * BOARD_SCALE
+
 	
